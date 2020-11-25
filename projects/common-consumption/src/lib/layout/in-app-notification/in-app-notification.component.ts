@@ -20,11 +20,9 @@ export class InAppNotificationComponent implements OnInit {
 
   ngOnInit() {
     this.displayItemCount = this.inAppNotificationConfig.minNotificationViewCount;
-    console.log(this.notificationList);
   }
 
   notificationClickHandler(event) {
-    console.log(this.notificationList);
     this.notificationClick.emit(event);
   }
 

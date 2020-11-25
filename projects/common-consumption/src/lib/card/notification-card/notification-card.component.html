@@ -5,8 +5,12 @@
       <div class="date ml-8">{{notification?.createdOn * 1000 | date:'E, d MMMM h:mm'}}</div>
     </div>
     <div class="delete-icon" (click)="notificationDeleteHandler($event);$event.stopPropagation()">
-      <img class="Delete-gray" src="assets/common-consumption/images/Delete-gray.svg" alt="" alt="delete" width="14px">
-      <img class="Delete-red" src="assets/common-consumption/images/Delete-red.svg" alt="" alt="delete" width="14px">
+      <i class="icon-svg icon-svg--xxs Delete-gray"><svg class="icon">
+        <use xlink:href="assets/common-consumption/images/sprite.svg#delete-gray"></use>
+      </svg></i>
+      <i class="icon-svg icon-svg--xxs Delete-red"><svg class="icon">
+        <use xlink:href="assets/common-consumption/images/sprite.svg#delete-red"></use>
+      </svg></i>
     </div>
   </div>
   <div class="sb-notification-data d-flex flex-ai-center">
