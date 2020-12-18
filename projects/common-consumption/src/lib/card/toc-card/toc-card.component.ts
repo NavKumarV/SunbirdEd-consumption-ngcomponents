@@ -8,7 +8,7 @@ import { IButtonConfig, PlatformType, TocCardType } from '../models';
   templateUrl: './toc-card.component.html',
   styleUrls: ['./toc-card.component.scss']
 })
-export class TocCardComponent implements OnInit {
+export class TocCardComponent implements OnInit, OnChanges {
   @Input() content;
   @Input() activeContent;
   @Input() type: TocCardType = TocCardType.TEXTBOOK;
@@ -19,17 +19,24 @@ export class TocCardComponent implements OnInit {
   @Input() platform = PlatformType.MOBILE;
   @Output() tocCardClick: EventEmitter<any> = new EventEmitter();
   @Output() playButtonClick: EventEmitter<any> = new EventEmitter();
+  @Input() scoreLabel = '';
+  @Input() maxAttempts;
+  @Input() disabled = '';
 
   fallbackImg = COMMON_CONSUMPTION_CONSTANTS.TOC_CARD_FALLBACK_IMG;
   iconPathMap: any;
   isContentStarted  = false;
   isCourseCompleted = false;
+  bestScoreLabel: string;
+  isLastAttempt: boolean = false;
+  isDisabled: boolean = false;
   get TocCardType() { return TocCardType; }
 
   ngOnInit() {
     if (this.type === TocCardType.COURSE) {
       this.createIconMap();
     }
+    this.getBestScore();
     setTimeout(() => {
       if (this.activeContent && this.activeContent.sbUniqueIdentifier === this.content.sbUniqueIdentifier) {
         this.tocCardClick.emit({ event: {}, data: { ...this.content } });
@@ -46,8 +53,23 @@ export class TocCardComponent implements OnInit {
     }
   }
 
+  ngOnChanges(changes) {
+    if (changes && changes.contentStatus) {
+      if (this.type === TocCardType.COURSE) {
+        this.createIconMap();
+      }
+      this.getBestScore();
+    }
+  }
+
   public async onTocCardClick(event) {
-    if (this.activeContent && this.activeContent.sbUniqueIdentifier !== this.content.sbUniqueIdentifier) {
+    if (this.isLastAttempt) {
+      event.isLastAttempt = true;
+      this.tocCardClick.emit({ event: event, data: { ...this.content } });
+    } else if (this.isDisabled) {
+      event.isDisabled = true;
+      this.tocCardClick.emit({ event: event, data: { ...this.content } });
+    } else if (this.activeContent && this.activeContent.sbUniqueIdentifier !== this.content.sbUniqueIdentifier) {
       this.tocCardClick.emit({ event: event, data: { ...this.content } });
     } else if (this.type = TocCardType.COURSE) {
       this.tocCardClick.emit({ event: event, data: { ...this.content } });
@@ -80,6 +102,16 @@ export class TocCardComponent implements OnInit {
       ];
       this.content.appIcon = this.getIconPath(this.content.mimeType);
     }
+  }
+
+  getBestScore() {
+    this.contentStatus.forEach((item) => {
+      if (item.contentId === this.content.identifier && item.bestScore) {
+        this.bestScoreLabel = this.scoreLabel + ' ' + item.bestScore.totalScore.toString() + '/' + item.bestScore.totalMaxScore.toString();
+        if (this.maxAttempts - item.score.length === 1) this.isLastAttempt = true;
+        if (item.score.length >= this.maxAttempts) this.isDisabled = true;
+      }
+    });
   }
 
   getIconPath(contentMimeType: string) {
